@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xbundle Framework"
+  short_description: "Scaffold, build, package, and run xbundle commands"
+  default_prompt: "Use $xbundle-framework to create, register, build, package, and run an xbundle command case."

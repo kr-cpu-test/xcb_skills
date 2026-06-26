@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cross Platform Bench"
+  short_description: "Create xcbench cross-platform benchmarks"
+  default_prompt: "Use $cross-platform-bench to create an xcbench-style benchmark with JSONL output and optional scheduler control."
