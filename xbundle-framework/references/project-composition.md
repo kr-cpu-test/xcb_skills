@@ -47,24 +47,32 @@ When combining with sbench-based benchmarks, keep this skill responsible for xbu
 
 ## AI And Scratch Directories
 
-When recommending a project structure, include optional project-root directories for AI-oriented documentation and local process state:
+When recommending a project structure, keep AI-facing project knowledge under `.ai/` and local scratch under `.dev/`:
 
 ```text
 .
 ├── .ai/
-├── .dev/
-└── .status/
+│   ├── README.md
+│   ├── plan/
+│   ├── status/
+│   ├── decisions/
+│   └── notes/
+└── .dev/
 ```
 
-- `.ai/`: committed AI-facing project notes, architecture summaries, build/test guidance, and conventions that help future AI agents understand the project.
-- `.dev/`: local scratch space for temporary scripts, generated artifacts, logs, and experiments.
-- `.status/`: local process notes, active task goals, task deltas, handoff state, and resume notes.
+- `.ai/README.md`: committed AI index for the project. Link to architecture notes, build/test guidance, xbundle targets, loader notes, plans, status, decisions, and generated-template notes.
+- `.ai/plan/`: committed plans for multi-step project work, migrations, module additions, platform bring-up, or xbundle integration.
+- `.ai/status/`: committed current state and handoff/resume notes that future agents need. Keep it concise; do not use it as a raw log directory.
+- `.ai/decisions/`: committed design decisions, tradeoffs, and durable rationale.
+- `.ai/notes/`: committed AI-facing research notes or project-specific conventions that do not fit the other folders.
+- `.dev/`: ignored local scratch space for temporary scripts, generated artifacts, logs, experiments, downloads, and bulky outputs.
 
-Recommend ignoring local-only directories:
+Put AI-generated files that should survive handoff under `.ai/`. Use `.ai/status/` for handoff state, and put disposable files under `.dev/`.
+
+Recommend ignoring local-only scratch:
 
 ```gitignore
 /.dev/
-/.status/
 ```
 
 Do not ignore `.ai/`; it is project documentation.
