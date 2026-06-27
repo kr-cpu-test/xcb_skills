@@ -21,6 +21,8 @@ XBUNDLE_MAIN(case_main)
 
 Keep `case_main` thin. Parse module arguments there only when needed, then call reusable C/C++ case logic.
 
+For an sbench-backed benchmark module, keep the module entrypoint equally thin: construct the sbench domain suite, attach an xbundle-backed logger or output adapter when needed, and call `suite.main(argc, argv)`. A multi-bench domain should still have one `XBUNDLE_MAIN`; leaf benches remain sbench subcommands under the suite.
+
 Optional lifecycle hooks are exported by name:
 
 ```c

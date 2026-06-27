@@ -45,6 +45,10 @@ Follow generated project or host loader docs for exact package layout. This skil
 
 When combining with sbench-based benchmarks, keep this skill responsible for xbundle scaffolding, `_icmd` registration, and loader structure. Keep benchmark logic reusable underneath the module entrypoint, and read the benchmark skill for result schema, JSONL, scheduler, or benchmark I/O rules.
 
+For one benchmark or one multi-bench domain, default to one xbundle command module and one `XBUNDLE_MAIN`. That module should run the sbench domain suite through a thin xbundle-sbench adapter, so leaf benchmarks remain sbench subcommands instead of separate `_icmd` modules.
+
+Split into multiple xbundle command modules only at a real command/domain boundary: independent benchmark domains, substantially different dependencies, incompatible platforms, separate host discovery needs, or distinct lifecycle/permission requirements. Do not split merely because a multi-bench suite has multiple leaf measurements.
+
 ## AI And Scratch Directories
 
 When recommending a project structure, keep AI-facing project knowledge under `.ai/` and local scratch under `.dev/`:

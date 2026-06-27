@@ -11,7 +11,7 @@ description: Create or extend sbench-based cross-platform C/C++ benchmark progra
    - Use `single-bench-cli` for one standalone measurement or a parameter sweep of the same measurement.
    - Use `multi-bench-cli` whenever the request contains multiple relatively independent measurements, even if the user does not say "suite".
    - In multi-bench work, split different setup, CLI options, measurement loops, or result schemas into separate bench leaves.
-   - If the request emphasizes xbundle, host/app integration, reusable command modules, device runtime, or `xbundle_runtime`, use `xbundle-framework` for the module/runtime structure and keep this skill focused on benchmark logic.
+   - If the request emphasizes xbundle, host/app integration, reusable command modules, device runtime, or `xbundle_runtime`, use `xbundle-framework` for the module/runtime structure and keep this skill focused on benchmark logic and sbench suite structure.
 2. Read `references/project-creation.md` before creating a benchmark project.
 3. Read `references/file-organization.md` before adding or moving benchmark files.
 4. Read only the benchmark implementation references needed for the task:
@@ -34,6 +34,8 @@ When the prompt says "module", "host", "runtime", "app integration", "device run
 Choose multi bench whenever the request contains multiple relatively independent measurements. Treat different setup, CLI options, inner loops, or result schemas as separate bench leaves. If the same users will naturally run, compare, or maintain the tests together, put them under one multi-bench runner. If the tests only share the word "benchmark" but target different objects, dependencies, or runtime environments, use separate projects.
 
 When multiple leaves belong to the same benchmark domain, prefer a domain suite: keep leaf benches registered in a domain-local factory and expose one `ForkableBench` suite to the unified runner. Use nested suites for subdomains that should appear as grouped subcommands under the domain suite.
+
+When exposing a benchmark or multi-bench domain through xbundle, keep one xbundle command module for that benchmark/domain by default. The module entrypoint should run the sbench domain suite through a thin xbundle-sbench adapter instead of creating one `XBUNDLE_MAIN` per leaf bench.
 
 In multi-bench mode, use the generated manifest and registration support. In single-bench mode, do not add multi-bench registry structure unless the generated project already provides it.
 

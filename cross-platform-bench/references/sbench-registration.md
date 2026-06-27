@@ -2,7 +2,7 @@
 
 Use this reference when writing C++ code that exposes benchmark commands through sbench. Prefer the `SBENCH_*` macros from `sbench/register.hpp`.
 
-Contents: macro roles, leaf bench, domain suite, nested suite, build modes, and linkage rules.
+Contents: macro roles, leaf bench, domain suite, multi-bench capabilities, nested suite, build modes, and linkage rules.
 
 ## Macro Roles
 
@@ -70,6 +70,21 @@ SBENCH_SUITE_ENTRY(UarchSuite);
 ```
 
 Use this for domains such as frontend, cache, memory, scheduler, allocator, or instruction execution when users naturally run and compare those leaves together. Do not flatten every leaf into the default suite factory unless each leaf is meant to be a separate top-level runner command.
+
+## Multi-Bench Capabilities
+
+sbench multi-bench support is centered on `BenchSuite` and `ForkableBench`:
+
+- `MicroBench` represents one runnable leaf command with its own CLI options and callback.
+- `MicroBenchFactory` collects leaf adapters through static registration.
+- `BenchSuite(MicroBenchFactory&)` turns the factory contents into CLI subcommands.
+- `ForkableBench` adds suite-level fork execution while still exposing the leaf subcommands.
+- `set_logger()` propagates the suite logger to child benches, so a host adapter can redirect stdout, stderr, and log domains once at the suite boundary.
+- `MicroBench::main(std::string, bool)` allows host adapters to pass shell-like argument strings without rebuilding CLI parsing.
+
+For multi-bench projects, default to one domain factory, one `ForkableBench` domain suite, and many registered leaf adapters. Keep benchmark core logic outside the sbench classes; register the sbench adapters, not the reusable measurement core.
+
+For xbundle exposure, default to one xbundle command module per benchmark or multi-bench domain. The module should create the domain suite, attach an xbundle-backed logger/output adapter when needed, and call `suite.main(argc, argv)`. Do not generate one `XBUNDLE_MAIN` per leaf bench unless the leaves are truly separate host-discovered commands with different dependency, platform, or lifecycle requirements.
 
 ## Nested Suite
 
