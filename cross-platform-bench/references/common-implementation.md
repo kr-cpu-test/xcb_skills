@@ -102,9 +102,9 @@ private:
 };
 ```
 
-For framework projects, include `sbench/register.hpp` alongside `sbench/sbench.hpp`. Do not include legacy `xcbench` registration headers such as `xcb_suite_reg/register.hpp`, `xcb_single/register.hpp`, or `bench_registry/register.hpp`.
+For framework projects, include `sbench/register.hpp` alongside `sbench/sbench.hpp`.
 
-`SBENCH_BENCH_FACTORY`, `SBENCH_BENCH_REGISTER_INTO`, and `SBENCH_SUITE_ENTRY` are provided by `sbench/register.hpp`. Do not reimplement these macros in a benchmark source file. Legacy `MICRO_BENCH_*` aliases may exist for old code, but new framework code should use `SBENCH_*`.
+`SBENCH_BENCH_FACTORY`, `SBENCH_BENCH_REGISTER_INTO`, and `SBENCH_SUITE_ENTRY` are provided by `sbench/register.hpp`. Do not reimplement these macros in a benchmark source file.
 
 ## Suite Pattern
 

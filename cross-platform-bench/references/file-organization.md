@@ -43,7 +43,7 @@ set(PROJECT_BENCHES
 )
 ```
 
-The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite. Do not invent legacy `xcbench` registry directories unless the generator creates them for compatibility.
+The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite.
 
 ## Bench Leaf Layout
 

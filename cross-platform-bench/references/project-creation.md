@@ -4,8 +4,6 @@ Use the benchmark project generator from the project checkout. If no generator i
 
 For xbundle-oriented cross-platform projects, use this skill for the benchmark scaffold and use `xbundle-framework` for xbundle-template, module ABI, host/runtime, and `xbundle_runtime` wiring.
 
-Do not require legacy `xcbench-template` or `xcb-template` commands for framework projects.
-
 ## Single Bench
 
 Use for one test program or a small proof of concept:
@@ -16,7 +14,7 @@ This layout does not need multi-bench manifests or registry directories.
 
 ## Multi Bench
 
-Use only when the project is a suite with multiple benches:
+Use when the request contains multiple relatively independent measurements:
 
 Use the generated multi-bench preset when the project provides one. Otherwise mirror the multi-bench layout in `file-organization.md`.
 

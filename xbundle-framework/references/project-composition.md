@@ -15,14 +15,15 @@ For `xbundle-template` projects, keep the generated layout as the source of trut
 │   ├── cli_main.cpp
 │   └── module_main.cpp
 ├── tests/
-├── tools/
 └── xbundle/
+    ├── scripts/
+    └── tools/
 ```
 
 - Put reusable logic in `src/<project_name>.cpp` and headers under `include/<project_name>/`.
 - Use `src/module_main.cpp` for `XBUNDLE_INFO`, `XBUNDLE_MAIN`, lifecycle hooks, and xbundle-specific I/O/path adaptation.
 - Use `src/cli_main.cpp` only when a local standalone command is useful for smoke testing or developer ergonomics.
-- Use `xbundle/` for package metadata, host-facing bundle files, or template-generated config.
+- Use `xbundle/` for package metadata, host-facing bundle files, generated scripts, tools, and config.
 
 If the project is only a small command module, omit the CLI and keep `tests/` focused on reusable case logic.
 
