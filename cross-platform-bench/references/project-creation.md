@@ -62,12 +62,6 @@ Generate local CMake presets:
 ./tools/configure_platform.py . --platform ohos --ohos-sdk-root <ohos-native-sdk-root>
 ```
 
-Build and test:
-
-```bash
-cmake --preset default
-cmake --build build/default
-ctest --test-dir build/default --output-on-failure
-```
+After configure, build and test with the generated presets and the narrow validation commands from `SKILL.md`.
 
 If generated benchmark dependencies are missing or the user asks how to obtain `sbench` or `libxcpu`, read `dependency-discovery.md`. Normal generated projects should use their own `.gitmodules`, CMake, CPM, FetchContent, or template-provided bootstrap.

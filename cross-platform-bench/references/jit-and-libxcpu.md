@@ -100,11 +100,11 @@ bool map_ios_jit(size_t size, IosJitMap *out) {
 }
 ```
 
-When the command is run without the helper, fail with a stderr diagnostic such as `rerun through --enable-jit` and return non-zero. Do not emit a JSONL row for missing debugger assist or failed JIT setup.
+When the command is run without the helper, fail with a stderr diagnostic such as `rerun through --enable-jit` and return non-zero.
 
 ## Minimal AArch64 Callable Skeleton
 
-Use this shape for small generated functions. Keep errors on stderr and return non-zero from the bench entrypoint; do not emit a JSONL row for JIT setup or runtime failures.
+Use this shape for small generated functions.
 
 ```cpp
 #if !defined(__aarch64__)
@@ -187,7 +187,7 @@ For an add dependency chain, `measured_ops = iteration * chain_length` when over
 
 ## Failure Handling
 
-JSONL output is for successful measurement rows only. For invalid parameters, non-AArch64 builds, failed JIT map/write/flush/protect, failed function call setup, or other setup/runtime failures, write a diagnostic to stderr and return non-zero or abort. Do not emit `{"status":"unsupported"}` or `{"status":"error"}` JSONL rows.
+Use `bench-io.md` failure rules. Treat invalid parameters, non-AArch64 builds, failed JIT map/write/flush/protect, failed function call setup, or other setup/runtime failures as stderr plus non-zero/abort with no JSONL row.
 
 Prefer catching exceptions at the CLI command boundary so lower-level JIT helpers can throw naturally while the command still reports a clear error.
 

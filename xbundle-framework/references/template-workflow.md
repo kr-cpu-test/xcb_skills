@@ -19,28 +19,9 @@ If no template checkout or command is available, read `dependency-discovery.md` 
 
 ## Common Template Flow
 
-After reading the template README and CLI help, a typical flow is:
+After reading the template README and CLI help, use the documented generator flow for project init, optional TUI init, platform addition, and template updates. Treat any command names in memory as examples only; the checkout's README/help is authoritative.
 
-```sh
-./xbundle_template.py init <project>
-./xbundle_template.py init --tui <project>
-./xbundle_template.py add-platform <project> --platform <platform>
-./xbundle_template.py update-template <project> --dry-run
-./xbundle_template.py update-template <project>
-```
-
-Treat these as common entrypoint examples, not a replacement for the checkout's README/help. If the project uses a package-installed command or Python module entrypoint instead of `./xbundle_template.py`, use the documented entrypoint.
-
-After project creation, the generated project usually owns the remaining workflow:
-
-```sh
-cd <project>
-python3 scripts/build.py
-python3 scripts/build.py --target <platform>:<kind>
-python3 scripts/ios_idbg.py <build|install|connect|run> ...
-```
-
-Use the generated project README and config files to decide exact targets and arguments.
+After project creation, the generated project owns the remaining workflow. Use its README, `xbundle/scripts/build.py --help`, `xbundle/scripts/ios_idbg.py --help`, and `xbundle/` config files to decide exact targets and arguments. Do not duplicate generated-project build/run instructions in skill output when those files are present.
 
 ## Create Project Or Module Skeletons
 
@@ -54,7 +35,7 @@ Use `xbundle-template` as scaffolding for:
 
 After generation, inspect the resulting CMake and README before adding custom logic. Keep generated structure aligned with the template instead of copying layout from an unrelated external project.
 
-If the generated project includes `scripts/build.py`, `scripts/ios_idbg.py`, `xbundle/config.json`, or `xbundle/cmake.json`, treat those generated files as the source of truth for targets, package names, and platform runners.
+If the generated project includes `xbundle/scripts/`, `xbundle/config.json`, or `xbundle/cmake.json`, treat those generated files as the source of truth for targets, package names, and platform runners.
 
 For normal C/C++ library dependencies, follow the generated project's CMake, CPM, FetchContent, or package-manager rules. Do not add unrelated library repos to xbundle-framework dependency discovery.
 
@@ -67,7 +48,7 @@ Prefer the template's own "add case", "add command", or "add module" command whe
 - add tests for reusable logic when the project has tests
 - add package metadata only when the generated layout uses it
 
-Register the case in the build with `xbundle_add_module(NAME <case_name> ...)`, then package the output under `lib/` so the loader can expose it.
+Register the case using the module/runtime rules in `module-runtime.md`, then verify the package shape with `project-composition.md`.
 
 ## Link And Path Policy
 

@@ -1,6 +1,6 @@
 # Bench IO
 
-Benchmark result rows should prefer JSONL: one flat JSON object per line. Bench I/O covers result serialization, stdout/stderr, file output, and xbundle runtime I/O/path adaptation.
+Benchmark result rows should prefer JSONL: one flat JSON object per line. Bench I/O covers result serialization, stdout/stderr, file output, and output sink adaptation.
 
 JSONL result rows are success-only. For parameter errors, setup failures, unsupported runtime paths, output-open failures, scheduling failures, JIT map/protect/execute failures, or other abort conditions, write diagnostics to stderr and return non-zero or abort. Do not emit `{"status":"unsupported"}` or `{"status":"error"}` JSONL rows.
 
@@ -42,12 +42,7 @@ For a regular CLI:
 - Any other `--output <path>` opens a normal file path, truncates it at the start of the run, then appends JSONL rows.
 - Diagnostics and output-open failures go to stderr and return a non-zero exit code without writing a JSONL row.
 
-For an xbundle module:
-
-- stdout, stderr, and path I/O must be adapted through `xbundle_runtime` helpers.
-- stdout rows must use `xbundle_write_stdout()` or `xbundle_printf()`.
-- stderr diagnostics must use `xbundle_write_stderr()` or `xbundle_fprintf_stderr()`.
-- The benchmark core should still write to the same abstract sink; only the entrypoint adapts the sink to xbundle runtime I/O.
+For an xbundle module, keep the same abstract sink and adapt only the entrypoint through `xbundle_runtime` helpers from `xbundle-framework/references/module-runtime.md`.
 
 If the same benchmark has both CLI and xbundle entrypoints, keep serialization and measurement code shared and make only the sink construction entrypoint-specific.
 
@@ -56,12 +51,11 @@ If the same benchmark has both CLI and xbundle entrypoints, keep serialization a
 When an xbundle module accepts `--output <path>`, treat the path as a host-defined virtual path.
 
 - Before writing a file, check host policy with `xbundle_path_info()` or `xbundle_path_can_write()`.
-- Call `xbundle_resolve_path()` only when the lower-level file API requires a real host path.
-- Treat successful resolve as path translation only; it does not grant write authorization by itself.
+- Call `xbundle_resolve_path()` only when the lower-level file API requires a real host path; resolve is translation, not authorization.
 - If the virtual path is not writable or cannot be resolved when a real path is required, write a diagnostic to xbundle stderr and return non-zero.
 - Do not emit a fake success JSONL row for output-path failures.
 
-For xbundle benchmark modules, also read `xbundle-framework/references/module-runtime.md` for runtime I/O and path helper usage. Keep xbundle module registration and loader packaging in `xbundle-framework`, not in this benchmark output reference.
+Keep xbundle module registration, loader packaging, and full runtime helper details in `xbundle-framework`.
 
 ## Implementation Guidance
 

@@ -64,13 +64,7 @@ xbundle_add_module(
 )
 ```
 
-If the generated project already includes the helper from a local checkout or SDK path, follow that pattern:
-
-```cmake
-include("${xbundle_runtime_SOURCE_DIR}/cmake/xbundle-runtime.cmake")
-```
-
-`xbundle_add_module(NAME smoke ...)` emits a shared module named like:
+`xbundle_add_module(NAME smoke ...)` emits the command module using the generated project's naming convention, commonly:
 
 ```text
 smoke_icmd.dylib
@@ -79,23 +73,11 @@ smoke_icmd.so
 
 Pass case-specific `LINK_LIBRARIES`, `INCLUDE_DIRS`, and `COMPILE_DEFINITIONS` through `xbundle_add_module` instead of bypassing the helper.
 
-Runtime packaging is target-specific. Generated CLI packages commonly embed `libxbundle_runtime` beside the command package, while iOS idbg-style module packages usually rely on the signed host app to provide the runtime. Follow the generated target docs and verify the host can resolve the runtime symbols; do not copy runtime dylibs into iOS module packages unless the template or host explicitly requires that shape.
-
-## Package For Loader Discovery
-
-Place the built command module under the package `lib/` directory:
-
-```text
-<xbundle-name>/
-└── lib/
-    └── smoke_icmd.dylib
-```
-
-Use `.so` for hosts that package ELF modules that way. Follow the host loader's documented path and signing requirements.
+Runtime packaging is target-specific. Follow generated target docs and verify the host can resolve runtime symbols.
 
 ## Validation
 
-Use `build-and-run.md` for configure, build, package, and platform run commands. From this runtime reference, verify only the module contract:
+Use `build-and-run.md` for build/run commands. From this reference, verify only the module contract:
 
 - the module exports `xbundle_info` through `XBUNDLE_INFO`
 - the module exports `xbundle_main` through `XBUNDLE_MAIN`
