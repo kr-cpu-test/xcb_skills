@@ -42,7 +42,7 @@ Follow generated project or host loader docs for exact package layout. This skil
 
 ## Composition With Benchmarks
 
-When combining with `xcbench-template`, keep this skill responsible for xbundle scaffolding, `_icmd` registration, and loader structure. Keep benchmark logic reusable underneath the module entrypoint, and read the benchmark skill for result schema, JSONL, scheduler, or benchmark I/O rules.
+When combining with sbench-based benchmarks, keep this skill responsible for xbundle scaffolding, `_icmd` registration, and loader structure. Keep benchmark logic reusable underneath the module entrypoint, and read the benchmark skill for result schema, JSONL, scheduler, or benchmark I/O rules.
 
 ## AI And Scratch Directories
 

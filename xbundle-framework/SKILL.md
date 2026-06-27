@@ -30,7 +30,7 @@ Use this skill to create xbundle-style command module projects and register runn
 - Create xbundle projects, modules, and case skeletons from template output.
 - Register a case as an `_icmd` module with `xbundle_add_module`.
 - Package and run command modules through template-generated docs, scripts, and loaders.
-- Compose xbundle modules with xcbench-style benchmark projects without forcing benchmark logic into the module boundary.
+- Compose xbundle modules with sbench-style benchmark projects without forcing benchmark logic into the module boundary.
 
 ## Resources
 

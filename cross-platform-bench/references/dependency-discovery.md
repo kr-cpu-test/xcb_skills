@@ -6,20 +6,14 @@ Use this reference only when generated benchmark dependencies are missing or amb
 
 - Treat benchmark dependencies as project-managed dependencies, not skill-owned files.
 - Do not vendor, submodule, or silently clone external repositories into this skill.
-- Prefer the generated project's `.gitmodules`, `.xcb_template.json`, CMake, CPM, FetchContent, and template-provided bootstrap commands.
+- Prefer the generated project's `.gitmodules`, CMake, CPM, FetchContent, and template-provided bootstrap commands.
 - Clone or point at adjacent local checkouts only when the user explicitly wants offline work, local dependency development, or gives approval.
 
 ## sbench
 
-Purpose: benchmark framework used by generated xcbench projects.
+Purpose: benchmark framework used by generated benchmark projects.
 
-Generated projects pin `sbench` by revision. Prefer:
-
-```sh
-xcb-template bootstrap-submodules .
-```
-
-or the generated project's documented bootstrap command. Inspect `.gitmodules` and `.xcb_template.json` before assuming the submodule URL or revision.
+Generated projects should pin `sbench` by revision. Use the generated project's documented bootstrap command. Inspect `.gitmodules` and project config before assuming the submodule URL or revision.
 
 If the user explicitly needs a local checkout or the generated project lacks dependency metadata, use:
 
@@ -27,14 +21,7 @@ If the user explicitly needs a local checkout or the generated project lacks dep
 git clone https://github.com/kr-cpu-test/sbench <workspace>/sbench
 ```
 
-For adjacent local development, pass a local checkout through the generator options only when intentionally changing `sbench` and the benchmark project together:
-
-```sh
---sbench-repo-url <workspace>/sbench
---sbench-revision <known-good-sbench-commit>
-```
-
-Use an empty `--sbench-revision ""` only for intentional floating local development.
+For adjacent local development, pass a local checkout through the generated project's documented override mechanism only when intentionally changing `sbench` and the benchmark project together.
 
 ## libxcpu
 

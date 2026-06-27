@@ -1,66 +1,30 @@
 # Project Creation
 
-Use the `xcbench-template` generator from the project checkout. If the package is installed, prefer the `xcb-template` console script; otherwise run `./xcbench-template/xcb_template.py` from a checkout that contains `xcbench-template`.
+Use the benchmark project generator from the project checkout. If no generator is present, create a small CMake project that depends on `sbench`.
 
 For xbundle-oriented cross-platform projects, use this skill for the benchmark scaffold and use `xbundle-framework` for xbundle-template, module ABI, host/runtime, and `xbundle_runtime` wiring.
 
-```bash
-xcb-template init-repo <repo-path> [options]
-# or:
-./xcbench-template/xcb_template.py init-repo <repo-path> [options]
-```
+Do not require legacy `xcbench-template` or `xcb-template` commands for framework projects.
 
 ## Single Bench
 
 Use for one test program or a small proof of concept:
 
-```bash
-xcb-template init-repo ./hello_bench \
-  --preset single-bench-cli \
-  --target-platform macos \
-  --target-platform ios
-```
+Use the generated single-bench preset when the project provides one. Otherwise mirror `assets/sbench-single-bench`.
 
-This layout does not need `bench_manifest.cmake` or `bench_registry/`.
+This layout does not need multi-bench manifests or registry directories.
 
 ## Multi Bench
 
 Use only when the project is a suite with multiple benches:
 
-```bash
-xcb-template init-repo ./cpu_bench_suite \
-  --preset multi-bench-cli \
-  --target-platform macos \
-  --target-platform ios \
-  --target-platform android \
-  --target-platform ohos
-```
+Use the generated multi-bench preset when the project provides one. Otherwise mirror the multi-bench layout in `file-organization.md`.
 
-Then add a bench:
-
-```bash
-./tools/add_bench.py . \
-  --bench-name instr_tp \
-  --bench-class-name InstrTp \
-  --bench-description "Instruction throughput benchmark"
-```
+Then add a bench through the generated project tool when one exists.
 
 ## Bootstrap And Configure
 
-Bootstrap submodules after creating a project:
-
-```bash
-xcb-template bootstrap-submodules .
-```
-
-Generate local CMake presets:
-
-```bash
-./tools/configure_platform.py . --platform macos
-./tools/configure_platform.py . --platform ios
-./tools/configure_platform.py . --platform android --android-ndk-root <android-ndk-root>
-./tools/configure_platform.py . --platform ohos --ohos-sdk-root <ohos-native-sdk-root>
-```
+Bootstrap submodules and generate local build presets through the generated project's README, scripts, or CMake presets. Do not assume a fixed bootstrap or configure script name unless the project contains it.
 
 After configure, build and test with the generated presets and the narrow validation commands from `SKILL.md`.
 

@@ -1,10 +1,10 @@
 #include "hello_bench/hello_bench.hpp"
+#include "sbench/register.hpp"
 #include "sbench/sbench.hpp"
-#include "xcb_single/register.hpp"
 
 #include <string>
 
-MICRO_BENCH_FACTORY(xcb_suite_factory);
+SBENCH_BENCH_FACTORY(hello_bench_factory);
 
 class HelloBench : public MicroBench {
 public:
@@ -18,11 +18,11 @@ private:
   std::string name_ = "world";
 };
 
-XCB_BENCH_REGISTER(HelloBench);
+SBENCH_BENCH_REGISTER_INTO(HelloBench, hello_bench_factory);
 
 class HelloSuite : public ForkableBench {
 public:
-  HelloSuite() : ForkableBench(xcb_suite_factory_get_instance()) {
+  HelloSuite() : ForkableBench(hello_bench_factory_get_instance()) {
     app->name("hello_bench");
     app->description("Single-bench hello world example");
   }
@@ -33,4 +33,4 @@ protected:
   }
 };
 
-XCB_BENCH_MAIN_ENTRY(HelloSuite);
+SBENCH_SUITE_ENTRY(HelloSuite);

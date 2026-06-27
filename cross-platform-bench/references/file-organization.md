@@ -13,21 +13,22 @@ Use this for one benchmark program:
 │   ├── main.cpp
 │   ├── suite_main.cpp
 │   └── <bench_logic>.cpp
-├── tests/
-└── tools/configure_platform.py
+└── tests/
 ```
 
-Do not add `bench_manifest.cmake` or `bench_registry/` for a single-bench task.
+Do not add multi-bench manifests or registry directories for a single-bench task unless the generated project already provides them.
 
 ## Multi Bench Layout
 
-Use this only for a suite:
+Use this for multiple relatively independent measurements that should share one runner:
 
 ```text
 src/
 ├── bench_manifest.cmake
-├── bench_registry/
 ├── suite_main.cpp
+├── <generated-registry>/
+├── fixtures/
+├── support/
 ├── instr_tp/
 ├── mem_latency/
 └── cache_probe/
@@ -42,7 +43,7 @@ set(PROJECT_BENCHES
 )
 ```
 
-`bench_registry/` provides shared registration macros and a suite factory so a bench leaf can build both as a split executable and as part of a singleton suite. It is a multi-bench concern, not a requirement for single-bench projects.
+The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite. Do not invent legacy `xcbench` registry directories unless the generator creates them for compatibility.
 
 ## Bench Leaf Layout
 
@@ -59,6 +60,14 @@ src/<bench_name>/
 ```
 
 Tests should link the support/static logic library where possible, not the CLI entrypoint.
+
+## Fixture And Support Separation
+
+Use shared `fixtures/` or `support/` code for platform, scheduler, affinity, output sink, JSONL writer, setup/teardown, and probe helpers that several bench leaves genuinely share.
+
+Keep each bench leaf's CLI options, setup parameters, measurement loop, result schema, validation rules, and mutable state local to that leaf. A fixture should provide capabilities, not know the business meaning of a specific bench. Bench leaves should not include each other's implementation files.
+
+Treat parameter sweeps of one measurement as one bench. Split into separate leaves when tests have different setup, CLI shape, inner loop, or result fields.
 
 ## AI And Scratch Directories
 
