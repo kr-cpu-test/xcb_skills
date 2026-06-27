@@ -43,7 +43,7 @@ set(PROJECT_BENCHES
 )
 ```
 
-The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite.
+The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite. When multiple leaves belong to one benchmark domain, prefer a domain suite that hides leaf registrations behind a domain-local factory; read `sbench-registration.md` for the C++ pattern.
 
 ## Bench Leaf Layout
 

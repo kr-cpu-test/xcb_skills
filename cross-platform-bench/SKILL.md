@@ -15,7 +15,8 @@ description: Create or extend sbench-based cross-platform C/C++ benchmark progra
 2. Read `references/project-creation.md` before creating a benchmark project.
 3. Read `references/file-organization.md` before adding or moving benchmark files.
 4. Read only the benchmark implementation references needed for the task:
-   - `references/common-implementation.md` for `MicroBench`, `ForkableBench`, CLI options, and tests.
+   - `references/sbench-registration.md` for `MicroBench`, `ForkableBench`, leaf factories, domain suites, nested suites, and split/singleton registration.
+   - `references/common-implementation.md` for CMake target patterns, support library linkage, reusable logic, and tests.
    - `references/scheduler-control.md` for `-t/--threads`, QoS, priority, CPU affinity, cluster parameters, and platform scheduler control.
    - `references/bench-io.md` for benchmark I/O, JSONL result rows, output sinks, and xbundle runtime path handling.
    - `references/jit-and-libxcpu.md` for `xcmem`, `xcjit`, `xcperf`, and AArch64 JIT.
@@ -32,6 +33,8 @@ When the prompt says "module", "host", "runtime", "app integration", "device run
 
 Choose multi bench whenever the request contains multiple relatively independent measurements. Treat different setup, CLI options, inner loops, or result schemas as separate bench leaves. If the same users will naturally run, compare, or maintain the tests together, put them under one multi-bench runner. If the tests only share the word "benchmark" but target different objects, dependencies, or runtime environments, use separate projects.
 
+When multiple leaves belong to the same benchmark domain, prefer a domain suite: keep leaf benches registered in a domain-local factory and expose one `ForkableBench` suite to the unified runner. Use nested suites for subdomains that should appear as grouped subcommands under the domain suite.
+
 In multi-bench mode, use the generated manifest and registration support. In single-bench mode, do not add multi-bench registry structure unless the generated project already provides it.
 
 ## Resources
@@ -40,7 +43,8 @@ In multi-bench mode, use the generated manifest and registration support. In sin
 - `assets/sbench-multi-bench-leaf/`: optional bench leaf example for an existing multi-bench project.
 - `references/project-creation.md`: generator commands and platform setup.
 - `references/file-organization.md`: single vs multi layout rules.
-- `references/common-implementation.md`: C++ registration and CMake patterns.
+- `references/sbench-registration.md`: sbench C++ registration patterns, including domain-local hidden registries and unified runner exposure.
+- `references/common-implementation.md`: CMake target patterns, support libraries, and reusable implementation guidance.
 - `references/scheduler-control.md`: parameterized scheduler control, thread placement, QoS, priority, CPU affinity, and cluster parameters.
 - `references/bench-io.md`: benchmark I/O, JSONL result rows, output sinks, and xbundle runtime path handling.
 - `references/jit-and-libxcpu.md`: libxcpu and JIT guidance.
