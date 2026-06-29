@@ -17,17 +17,17 @@ Do not reimplement these macros in benchmark code. Include `sbench/register.hpp`
 
 ## Leaf Bench
 
-Use `MicroBench` for one runnable measurement command. Keep CLI options, mutable state, setup, measurement loop, result schema, and validation local to the leaf unless multiple leaves genuinely share a fixture.
+Use `MicroBench` for one runnable measurement command. Keep CLI options, mutable state, setup, measurement loop, result schema, and validation local to the leaf unless multiple leaves genuinely share a suite-root fixture/support/common capability.
 
 ```cpp
 #include "sbench/register.hpp"
 
 #include <cstddef>
 
-class ICacheBench : public MicroBench {
+class CacheProbeBench : public MicroBench {
 public:
-  ICacheBench() : MicroBench("icache") {
-    app->description("Instruction cache benchmark");
+  CacheProbeBench() : MicroBench("cache_probe") {
+    app->description("Cache probe benchmark");
     app->add_option("--bytes", bytes_, "Working set size in bytes");
     app->callback([this]() { run(); });
   }
@@ -37,7 +37,7 @@ private:
   void run();
 };
 
-SBENCH_BENCH_REGISTER_INTO(ICacheBench, uarch_bench_factory);
+SBENCH_BENCH_REGISTER_INTO(CacheProbeBench, domain_bench_factory);
 ```
 
 The registration key is the C++ class name; the CLI command name is controlled by the `MicroBench` constructor or `app->name(...)`.
@@ -51,25 +51,25 @@ This is the preferred pattern when multiple benchmark leaves belong to the same 
 
 #include <memory>
 
-SBENCH_BENCH_FACTORY(uarch_bench_factory);
+SBENCH_BENCH_FACTORY(domain_bench_factory);
 
-class UarchSuite : public ForkableBench {
+class DomainSuite : public ForkableBench {
 public:
-  UarchSuite() : ForkableBench(uarch_bench_factory_get_instance()) {
-    app->name("uarch");
-    app->description("Microarchitecture benchmark suite");
+  DomainSuite() : ForkableBench(domain_bench_factory_get_instance()) {
+    app->name("domain");
+    app->description("Benchmark domain suite");
   }
 
 protected:
   std::unique_ptr<ForkableBench> create_fork_instance() const override {
-    return std::make_unique<UarchSuite>();
+    return std::make_unique<DomainSuite>();
   }
 };
 
-SBENCH_SUITE_ENTRY(UarchSuite);
+SBENCH_SUITE_ENTRY(DomainSuite);
 ```
 
-Use this for domains such as frontend, cache, memory, scheduler, allocator, or instruction execution when users naturally run and compare those leaves together. Do not flatten every leaf into the default suite factory unless each leaf is meant to be a separate top-level runner command.
+Use a domain suite when users naturally run and compare those leaves together. Do not flatten every leaf into the default suite factory unless each leaf is meant to be a separate top-level runner command.
 
 ## Multi-Bench Capabilities
 
@@ -82,7 +82,7 @@ sbench multi-bench support is centered on `BenchSuite` and `ForkableBench`:
 - `set_logger()` propagates the suite logger to child benches, so a host adapter can redirect stdout, stderr, and log domains once at the suite boundary.
 - `MicroBench::main(std::string, bool)` allows host adapters to pass shell-like argument strings without rebuilding CLI parsing.
 
-For multi-bench projects, default to one domain factory, one `ForkableBench` domain suite, and many registered leaf adapters. Keep benchmark core logic outside the sbench classes; register the sbench adapters, not the reusable measurement core.
+For multi-bench projects, default to one domain factory, one `ForkableBench` domain suite, and many registered leaf adapters. Shared fixture/support/common code lives at the suite root and is linked by leaves that need it. Keep benchmark core logic outside the sbench classes; register the sbench adapters, not the reusable measurement core.
 
 For xbundle exposure, default to one xbundle command module per benchmark or multi-bench domain. The module should create the domain suite, attach an xbundle-backed logger/output adapter when needed, and call `suite.main(argc, argv)`. Do not generate one `XBUNDLE_MAIN` per leaf bench unless the leaves are truly separate host-discovered commands with different dependency, platform, or lifecycle requirements.
 
@@ -110,7 +110,7 @@ protected:
   }
 };
 
-SBENCH_BENCH_REGISTER_INTO(FrontendSuite, uarch_bench_factory);
+SBENCH_BENCH_REGISTER_INTO(FrontendSuite, domain_bench_factory);
 ```
 
 Do not also call `SBENCH_SUITE_ENTRY(FrontendSuite)` unless the subdomain should appear both as a nested command and as its own top-level suite.

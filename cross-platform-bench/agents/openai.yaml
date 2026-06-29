@@ -1,4 +1,4 @@
 interface:
   display_name: "Cross Platform Bench"
-  short_description: "Create sbench cross-platform benchmarks"
-  default_prompt: "Use $cross-platform-bench to create an sbench benchmark with JSONL output and optional scheduler control."
+  short_description: "Create benchmark logic for xbundle projects"
+  default_prompt: "Use $cross-platform-bench with $xbundle-framework to create an sbench benchmark with JSONL output and optional scheduler control."

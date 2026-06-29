@@ -2,7 +2,7 @@
 
 ## Single Bench Layout
 
-Use this for one benchmark program:
+Use this for one benchmark case or module:
 
 ```text
 .
@@ -16,11 +16,11 @@ Use this for one benchmark program:
 └── tests/
 ```
 
-Do not add multi-bench manifests or registry directories for a single-bench task unless the generated project already provides them.
+Do not add multi-bench manifests or registry directories for a single-bench task unless the xbundle project already provides them.
 
 ## Multi Bench Layout
 
-Use this for multiple relatively independent measurements that should share one runner:
+Use this only for an explicit suite/domain runner. The suite root owns manifest, generated registry, shared fixtures/support/common, and tools; each leaf remains independently testable.
 
 ```text
 src/
@@ -29,6 +29,8 @@ src/
 ├── <generated-registry>/
 ├── fixtures/
 ├── support/
+├── common/
+├── tools/
 ├── instr_tp/
 ├── mem_latency/
 └── cache_probe/
@@ -43,11 +45,11 @@ set(PROJECT_BENCHES
 )
 ```
 
-The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite. When multiple leaves belong to one benchmark domain, prefer a domain suite that hides leaf registrations behind a domain-local factory; read `sbench-registration.md` for the C++ pattern.
+The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite. When leaves belong to one domain, prefer a domain suite that hides leaf registrations behind a domain-local factory; read `sbench-registration.md` for the C++ pattern.
 
 ## Bench Leaf Layout
 
-Keep reusable logic separate from CLI registration:
+Keep reusable logic separate from entrypoint registration:
 
 ```text
 src/<bench_name>/
@@ -59,15 +61,15 @@ src/<bench_name>/
 └── docs/README.md
 ```
 
-Tests should link the support/static logic library where possible, not the CLI entrypoint.
+Tests should link the support/static logic library where possible, not an entrypoint.
 
 ## Fixture And Support Separation
 
-Use shared `fixtures/` or `support/` code for platform, scheduler, affinity, output sink, JSONL writer, setup/teardown, and probe helpers that several bench leaves genuinely share.
+Use suite-root `fixtures/`, `support/`, or `common/` only for platform, scheduler, affinity, output sink, JSONL writer, setup/teardown, common CMake helpers, and probe helpers that several leaves genuinely share. `tools/` may hold project-provided add-leaf, validation, or maintenance scripts.
 
 Keep each bench leaf's CLI options, setup parameters, measurement loop, result schema, validation rules, and mutable state local to that leaf. A fixture should provide capabilities, not know the business meaning of a specific bench. Bench leaves should not include each other's implementation files.
 
-Treat parameter sweeps of one measurement as one bench. Split into separate leaves when tests have different setup, CLI shape, inner loop, or result fields.
+Treat parameter sweeps of one measurement as one bench. Split into separate leaves only inside an explicit multi-bench suite when tests have different setup, CLI shape, inner loop, or result fields.
 
 ## AI And Scratch Directories
 

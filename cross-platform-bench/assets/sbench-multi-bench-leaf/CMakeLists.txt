@@ -1,3 +1,5 @@
+# Multi-bench leaf example. The suite root provides project_add_bench and
+# any shared fixtures/support/common targets that this leaf links explicitly.
 add_library(hello_bench_support STATIC
   src/hello_bench.cpp
 )
