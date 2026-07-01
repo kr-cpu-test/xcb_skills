@@ -11,7 +11,6 @@ Use this for one benchmark case or module:
 ├── include/<bench_name>/
 ├── src/
 │   ├── main.cpp
-│   ├── suite_main.cpp
 │   └── <bench_logic>.cpp
 └── tests/
 ```
@@ -20,13 +19,13 @@ Do not add multi-bench manifests or registry directories for a single-bench task
 
 ## Multi Bench Layout
 
-Use this only for an explicit suite/domain runner. The suite root owns manifest, generated registry, shared fixtures/support/common, and tools; each leaf remains independently testable.
+Use this only for an explicit suite/domain runner. The suite root owns manifest, registration support, shared fixtures/support/common, and tools; each leaf remains independently testable.
 
 ```text
 src/
 ├── bench_manifest.cmake
 ├── suite_main.cpp
-├── <generated-registry>/
+├── <registration-support>/
 ├── fixtures/
 ├── support/
 ├── common/
@@ -45,7 +44,7 @@ set(PROJECT_BENCHES
 )
 ```
 
-The generated registry support should rely on `sbench/register.hpp` so a bench leaf can build both as a split executable and as part of a singleton suite. When leaves belong to one domain, prefer a domain suite that hides leaf registrations behind a domain-local factory; read `sbench-registration.md` for the C++ pattern.
+Registration support should follow the project-provided add-bench tool or current suite conventions. When leaves belong to one domain, prefer one domain suite that hides leaves behind that suite command. Use `sbench-registration.md` for project policy; use `sbench/docs/registration.md`, `sbench/docs/api.md`, and `sbench/docs/examples.md` for exact C++ APIs and build modes.
 
 ## Bench Leaf Layout
 
@@ -73,32 +72,10 @@ Treat parameter sweeps of one measurement as one bench. Split into separate leav
 
 ## AI And Scratch Directories
 
-When creating or extending a benchmark project, keep AI-facing project knowledge under `.ai/` and local scratch under `.dev/`:
+For xbundle-template projects, use the project hygiene rules in
+`xbundle-framework/references/project-composition.md`.
 
-```text
-.
-├── .ai/
-│   ├── README.md
-│   ├── plan/
-│   ├── status/
-│   ├── decisions/
-│   └── notes/
-└── .dev/
-```
-
-- `.ai/README.md`: committed AI index for the project. Link to architecture notes, build/test guidance, plans, status, decisions, benchmark conventions, and generated-template notes.
-- `.ai/plan/`: committed plans for multi-step project work, migrations, benchmark additions, or xbundle integration.
-- `.ai/status/`: committed current state and handoff/resume notes that future agents need. Keep it concise; do not use it as a raw log directory.
-- `.ai/decisions/`: committed design decisions, tradeoffs, and durable rationale.
-- `.ai/notes/`: committed AI-facing research notes or project-specific conventions that do not fit the other folders.
-- `.dev/`: ignored local scratch space for temporary scripts, generated artifacts, logs, experiments, downloads, and bulky outputs.
-
-Put AI-generated files that should survive handoff under `.ai/`. Use `.ai/status/` for handoff state, and put disposable files under `.dev/`.
-
-Recommend ignoring local-only scratch:
-
-```gitignore
-/.dev/
-```
-
-Do not ignore `.ai/`; it is project documentation.
+From this benchmark skill, only add durable benchmark conventions, result
+schema notes, validation notes, and measurement decisions under `.ai/`. Put
+temporary benchmark outputs, generated probes, logs, and experiments under
+`.dev/`.

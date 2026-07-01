@@ -20,16 +20,11 @@ private:
 
 SBENCH_BENCH_REGISTER_INTO(HelloBench, hello_bench_factory);
 
-class HelloBenchSuite : public ForkableBench {
+class HelloBenchSuite : public BenchSuite {
 public:
-  HelloBenchSuite() : ForkableBench(hello_bench_factory_get_instance()) {
+  HelloBenchSuite() : BenchSuite(hello_bench_factory_get_instance()) {
     app->name("hello_bench");
     app->description("Multi-bench leaf hello world example");
-  }
-
-protected:
-  std::unique_ptr<ForkableBench> create_fork_instance() const override {
-    return std::make_unique<HelloBenchSuite>();
   }
 };
 

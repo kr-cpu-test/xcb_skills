@@ -46,16 +46,18 @@ For an xbundle module, keep the same abstract sink and adapt only the entrypoint
 
 If the same benchmark has both CLI and xbundle entrypoints, keep serialization and measurement code shared and make only the sink construction entrypoint-specific.
 
-## Path Handling Under Xbundle Runtime
+## Xbundle Output Paths
 
-When an xbundle module accepts `--output <path>`, treat the path as a host-defined virtual path.
+When an xbundle module accepts `--output <path>`, treat file output as
+host/runtime-mediated rather than ordinary process filesystem access.
 
-- Before writing a file, check host policy with `xbundle_path_info()` or `xbundle_path_can_write()`.
-- Call `xbundle_resolve_path()` only when the lower-level file API requires a real host path; resolve is translation, not authorization.
-- If the virtual path is not writable or cannot be resolved when a real path is required, write a diagnostic to xbundle stderr and return non-zero.
-- Do not emit a fake success JSONL row for output-path failures.
+This skill owns the benchmark sink policy: path or sink failures write a
+diagnostic to stderr, return non-zero, and emit no JSONL result row. Exact
+virtual-path helper calls, authorization checks, and resolve behavior belong to
+`xbundle-framework/references/module-runtime.md`.
 
-Keep xbundle module registration, loader packaging, and full runtime helper details in `xbundle-framework`.
+Keep xbundle module registration, loader packaging, and runtime helper details
+in `xbundle-framework`.
 
 ## Implementation Guidance
 

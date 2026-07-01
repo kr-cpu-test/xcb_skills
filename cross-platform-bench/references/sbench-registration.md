@@ -1,132 +1,139 @@
 # Sbench Registration
 
-Use this reference when writing C++ code that exposes benchmark commands through sbench. Prefer the `SBENCH_*` macros from `sbench/register.hpp`.
+Use this reference when organizing benchmark projects that expose commands
+through sbench. It is a project-usage guide, not the source of truth for sbench
+API definitions.
 
-Contents: macro roles, leaf bench, domain suite, multi-bench capabilities, nested suite, build modes, and linkage rules.
+Read sbench docs for API facts and exact macro behavior:
 
-## Macro Roles
+- `sbench/docs/registration.md`: dynamic registration, suite entry build modes,
+  registration translation unit ownership, and shared runtime linking.
+- `sbench/docs/api.md`: public classes, macros, fixtures, and helper functions.
+- `sbench/docs/architecture.md`: runtime structure, execution flow, factory and
+  suite relationships, and thread model.
+- `sbench/include/sbench/sbench.hpp` and `sbench/include/sbench/register.hpp`:
+  exact definitions.
 
-- `SBENCH_BENCH_FACTORY(name)`: define one `MicroBenchFactory` accessor in exactly one translation unit.
-- `SBENCH_BENCH_REGISTER_INTO(BenchClass, factory_name)`: register a `MicroBench` or `ForkableBench` class into a named factory.
-- `SBENCH_BENCH_REGISTER(BenchClass)`: register directly into the default sbench suite factory; use this rarely because domain-local factories usually give cleaner grouping.
-- `SBENCH_SUITE_ENTRY(SuiteClass)`: expose a suite according to the target build mode.
-- `SBENCH_SUITE_MAIN(SuiteClass)`: emit only a split-executable `main()` when the build defines `SBENCH_BUILD_SPLIT_EXE`.
-- `SBENCH_SUITE_REGISTER(SuiteClass)`: register directly into the default sbench suite factory; prefer `SBENCH_SUITE_ENTRY` unless unconditional registration is intentional.
+Keep this file for cross-platform-bench decisions: suite shape, domain grouping,
+xbundle composition, and reusable measurement-code boundaries.
 
-Do not reimplement these macros in benchmark code. Include `sbench/register.hpp` in translation units that define factories, leaf registrations, suite registrations, or suite entrypoints.
+## Project Roles
 
-## Leaf Bench
+Separate benchmark projects into these roles:
 
-Use `MicroBench` for one runnable measurement command. Keep CLI options, mutable state, setup, measurement loop, result schema, and validation local to the leaf unless multiple leaves genuinely share a suite-root fixture/support/common capability.
+- support library: reusable measurement logic, parsers, kernels, fixtures,
+  output helpers, platform helpers, and tests;
+- sbench adapter translation unit: defines a `MicroBench` or suite class and
+  uses `SBENCH_*` registration macros;
+- suite entrypoint: creates or exposes a domain suite and runs
+  `suite.main(argc, argv)`;
+- final runner/module target: the CLI wrapper or xbundle `_icmd` module loaded
+  by the host.
 
-```cpp
-#include "sbench/register.hpp"
+Keep benchmark core logic outside sbench adapter classes. The adapter should
+parse CLI options, call reusable measurement code, and emit the benchmark result
+through the project output sink.
 
-#include <cstddef>
+## xbundle + sbench Target Topology
 
-class CacheProbeBench : public MicroBench {
-public:
-  CacheProbeBench() : MicroBench("cache_probe") {
-    app->description("Cache probe benchmark");
-    app->add_option("--bytes", bytes_, "Working set size in bytes");
-    app->callback([this]() { run(); });
-  }
+Use this topology when one benchmark or domain is exposed through both sbench
+and an xbundle command module:
 
-private:
-  std::size_t bytes_ = 32768;
-  void run();
-};
+```text
+measurement core
+  -> support library
+     -> tests
+     -> optional CLI runner
+     -> xbundle module entrypoint
 
-SBENCH_BENCH_REGISTER_INTO(CacheProbeBench, domain_bench_factory);
+sbench adapter / registration TU
+  -> MicroBench or domain suite adapter
+  -> calls measurement core
+  -> linked into final runner/module image
+
+optional local CLI runner
+  -> links support + sbench adapters + sbench runtime
+  -> used for local --help and smoke tests
+
+module_main.cpp
+  -> XBUNDLE_INFO / XBUNDLE_MAIN
+  -> constructs or invokes the sbench bench/suite
+  -> adapts stdout, stderr, and paths through xbundle runtime
+
+final <command_name>_icmd
+  -> links support + sbench adapter objects + sbench runtime + xbundle runtime
+  -> discovered and executed by the host loader
 ```
 
-The registration key is the C++ class name; the CLI command name is controlled by the `MicroBench` constructor or `app->name(...)`.
+Do not put measurement logic directly in `XBUNDLE_MAIN`, do not create one
+xbundle command module per leaf by default, and do not hide sbench registration
+translation units in a library that is not linked into the final loaded image.
 
-## Domain Suite
+## Single Bench
 
-This is the preferred pattern when multiple benchmark leaves belong to the same benchmark domain and should be hidden behind one runner command. The unified runner sees one suite. The leaf commands stay in a domain-local factory and appear under that suite.
+For one measurement, proof, smoke command, or parameter sweep, keep one
+single-bench shape. Do not add multi-bench registry directories or domain suite
+machinery unless the xbundle project already provides them.
 
-```cpp
-#include "sbench/register.hpp"
+Use a `MicroBench` adapter when the project wants sbench CLI behavior. Otherwise
+keep the measurement core reusable and let the xbundle module or CLI wrapper
+call it directly.
 
-#include <memory>
+## Multi-Bench Suite
 
-SBENCH_BENCH_FACTORY(domain_bench_factory);
+Use multi-bench only for an explicit suite/domain workflow: unified runner,
+grouped domains/subdomains, long-lived benchmark collection, or repeated future
+leaf additions.
 
-class DomainSuite : public ForkableBench {
-public:
-  DomainSuite() : ForkableBench(domain_bench_factory_get_instance()) {
-    app->name("domain");
-    app->description("Benchmark domain suite");
-  }
+Default to this shape:
 
-protected:
-  std::unique_ptr<ForkableBench> create_fork_instance() const override {
-    return std::make_unique<DomainSuite>();
-  }
-};
+- one domain-local registration/factory path;
+- many leaf adapters registered into that factory;
+- one domain suite exposed to the unified runner or xbundle module;
+- shared fixture/support/common code at the suite root, linked by leaves that
+  need it.
 
-SBENCH_SUITE_ENTRY(DomainSuite);
-```
+Use the ordinary sbench suite shape by default. Use `ForkableBench` only when
+the project needs suite-level `--fork` execution or already uses that pattern.
+For exact `BenchSuite`, `ForkableBench`, factory, and registration APIs, read
+`sbench/docs/api.md` and `sbench/docs/registration.md`.
 
-Use a domain suite when users naturally run and compare those leaves together. Do not flatten every leaf into the default suite factory unless each leaf is meant to be a separate top-level runner command.
+Use a nested suite only when a domain contains a subdomain that should appear as
+a grouped subcommand. Register the subdomain suite into the parent domain
+factory. Do not also expose that subdomain as a top-level suite unless the user
+asks for both command paths.
 
-## Multi-Bench Capabilities
+## xbundle Composition
 
-sbench multi-bench support is centered on `BenchSuite` and `ForkableBench`:
+For xbundle exposure, default to one xbundle command module per benchmark or
+multi-bench domain. Individual benchmark leaves normally remain sbench
+subcommands, not separate host-discovered modules.
 
-- `MicroBench` represents one runnable leaf command with its own CLI options and callback.
-- `MicroBenchFactory` collects leaf adapters through static registration.
-- `BenchSuite(MicroBenchFactory&)` turns the factory contents into CLI subcommands.
-- `ForkableBench` adds suite-level fork execution while still exposing the leaf subcommands.
-- `set_logger()` propagates the suite logger to child benches, so a host adapter can redirect stdout, stderr, and log domains once at the suite boundary.
-- `MicroBench::main(std::string, bool)` allows host adapters to pass shell-like argument strings without rebuilding CLI parsing.
+The module entrypoint should:
 
-For multi-bench projects, default to one domain factory, one `ForkableBench` domain suite, and many registered leaf adapters. Shared fixture/support/common code lives at the suite root and is linked by leaves that need it. Keep benchmark core logic outside the sbench classes; register the sbench adapters, not the reusable measurement core.
+1. construct the single bench or domain suite;
+2. attach an xbundle-backed logger/output adapter when the project uses one;
+3. call the sbench `main(argc, argv)` path;
+4. leave module registration, loader exposure, path handling, and runtime I/O
+   to `xbundle-framework`.
 
-For xbundle exposure, default to one xbundle command module per benchmark or multi-bench domain. The module should create the domain suite, attach an xbundle-backed logger/output adapter when needed, and call `suite.main(argc, argv)`. Do not generate one `XBUNDLE_MAIN` per leaf bench unless the leaves are truly separate host-discovered commands with different dependency, platform, or lifecycle requirements.
+Do not create one `XBUNDLE_MAIN` per leaf bench unless the leaves are truly
+separate host-discovered commands with different dependencies, platform
+requirements, or lifecycle.
 
-## Nested Suite
+## Linking Policy
 
-Use a nested suite when a domain contains a subdomain that should be grouped as a subcommand. Define one factory for the subdomain, register leaves into it, then register the subdomain suite into the parent domain factory.
+Use `sbench/docs/registration.md` for exact registration ownership, suite entry
+build modes, object/link-whole choices, shared-runtime packaging, and validation
+commands.
 
-```cpp
-#include "sbench/register.hpp"
+For benchmark-project policy, keep only these decisions here:
 
-#include <memory>
-
-SBENCH_BENCH_FACTORY(frontend_bench_factory);
-
-class FrontendSuite : public ForkableBench {
-public:
-  FrontendSuite() : ForkableBench(frontend_bench_factory_get_instance()) {
-    app->name("frontend");
-    app->description("Frontend pipeline benchmark suite");
-  }
-
-protected:
-  std::unique_ptr<ForkableBench> create_fork_instance() const override {
-    return std::make_unique<FrontendSuite>();
-  }
-};
-
-SBENCH_BENCH_REGISTER_INTO(FrontendSuite, domain_bench_factory);
-```
-
-Do not also call `SBENCH_SUITE_ENTRY(FrontendSuite)` unless the subdomain should appear both as a nested command and as its own top-level suite.
-
-## Build Modes
-
-`SBENCH_SUITE_ENTRY(SuiteClass)` is intentionally build-controlled:
-
-- With `SBENCH_BUILD_SPLIT_EXE`, it emits `main()` for a standalone executable of that suite.
-- With `SBENCH_BUILD_SINGLETON`, it registers the suite into the default sbench suite factory for a unified runner.
-- If neither mode is defined, it does not expose the suite; use that only for pure support/library targets.
-
-A multi-domain runner can link several suite translation units built with `SBENCH_BUILD_SINGLETON`; each `SBENCH_SUITE_ENTRY` registers one domain suite into the default suite factory.
-
-## Linkage Rules
-
-Static registration runs only when the object file is linked into the final target. Prefer generated project helpers that compile all leaf registration translation units into the bench target, or use an object library/link-whole strategy when registrations live behind a static library.
-
-Keep each `SBENCH_BENCH_FACTORY(factory_name)` in one translation unit. Leaf translation units may use `SBENCH_BENCH_REGISTER_INTO(..., factory_name)`; the macro declares the factory accessor and registers during static initialization.
+- project registration adapters must be included in the final runner or xbundle
+  `_icmd` module image by the generated project mechanism;
+- the generic sbench runtime is a project-provided dependency, not a place for
+  project-specific leaf registration;
+- prefer generated add-leaf helpers for sbench leaves and the xbundle command
+  wrapper for the outer module before hand-writing registration target wiring;
+- after packaging, validate loader command discovery and sbench subcommand
+  visibility through the project docs.

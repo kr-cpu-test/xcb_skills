@@ -1,6 +1,6 @@
 # Project Creation
 
-For a new cross-platform benchmark project, use `xbundle-framework` to create the `xbundle-template` project, module, and case skeleton first. This skill then supplies the benchmark measurement code, sbench shape, JSONL result rows, scheduler options, and JIT/libxcpu guidance inside that xbundle project.
+For a new cross-platform benchmark project, use `xbundle-framework` to create the `xbundle-template` project and outer command/module skeleton first. This skill then supplies the benchmark measurement code, sbench shape, JSONL result rows, scheduler options, and JIT/libxcpu guidance inside that xbundle project.
 
 Do not create a separate ad-hoc CMake benchmark project when the task is to create a new benchmark project. New project scaffolding belongs to `xbundle-framework`; benchmark implementation details belong here.
 
@@ -10,7 +10,7 @@ When extending an existing benchmark project, follow that project's README, proj
 
 Default to this path for one test program, proof of concept, repro, smoke command, or parameter sweep of one measurement:
 
-Use this as the default benchmark shape inside the xbundle project/module/case or inside an existing single-bench project.
+Use this as the default benchmark shape inside the xbundle project or outer command/module, or inside an existing single-bench project.
 
 This layout does not need multi-bench manifests or registry directories.
 
@@ -25,6 +25,14 @@ Add a leaf through the project-provided tool when one exists. If no tool exists,
 ## Bootstrap And Configure
 
 Bootstrap dependencies and local build presets through the xbundle project's README, scripts, or CMake presets. Do not assume a fixed bootstrap or configure script name unless the project contains it.
+
+When a generated or existing benchmark project uses CPM and the user has not supplied `CPM_SOURCE_CACHE`, prefer a workspace-local cache under the benchmark project root:
+
+```sh
+-DCPM_SOURCE_CACHE=<workspace>/.cpm
+```
+
+Do not choose a global user cache by default. Respect an explicit command-line or environment `CPM_SOURCE_CACHE` override when the user intentionally wants a shared cache.
 
 After configure, build and test with the project presets and the narrow validation commands from `SKILL.md`.
 

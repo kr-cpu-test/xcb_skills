@@ -20,16 +20,23 @@ target_link_libraries(<project_slug>_support
     RapidJSON
 )
 
-target_link_libraries(<case_name>_icmd
+target_link_libraries(<command_name>_icmd
   PRIVATE
     <project_slug>_support
-    sbench
+    <project-provided-sbench-target>
 )
 ```
 
-Create `<case_name>_icmd` through the xbundle project/module rules, not in this skill. If the xbundle project provides a CLI wrapper or unit-test target, link that target to `<project_slug>_support` instead of duplicating measurement logic.
+Create `<command_name>_icmd` through the xbundle project/module rules, not in this skill. If the xbundle project provides a CLI wrapper or unit-test target, link that target to `<project_slug>_support` instead of duplicating measurement logic.
 
 Keep tests linked to `<project_slug>_support` when they exercise reusable logic instead of an entrypoint.
+
+A support library is for reusable implementation code. When a `.cpp` file exists
+mainly to register a `MicroBench` or suite through static initialization, treat
+it as runner/module composition source. Add it to the final runner/module target
+directly, or collect it in an object target and add those objects to the final
+runner/module target. See `sbench-registration.md` for the xbundle+sbench target
+shape.
 
 ## CMake For Multi Bench Leaf
 
@@ -65,7 +72,7 @@ project_bench_link_libraries(instr_tp
 project_install_bench(instr_tp)
 ```
 
-`project_add_bench` should link `sbench` and define the build mode needed by `sbench/register.hpp`, such as `SBENCH_BUILD_SPLIT_EXE` for a split executable or `SBENCH_BUILD_SINGLETON` for a suite-registered library. For C++ leaf, suite, nested suite, and unified runner registration patterns, read `sbench-registration.md`.
+`project_add_bench` should use the project's sbench target and build-mode conventions. For exact C++ leaf, suite, nested suite, unified runner, and split/singleton registration APIs, read `sbench/docs/registration.md`, `sbench/docs/api.md`, and `sbench/docs/examples.md`. Use `sbench-registration.md` only for this skill's project-organization policy.
 
 Keep a leaf-local support library for that leaf's reusable implementation. Move code to suite-root `fixtures/`, `support/`, or `common/` only when multiple leaves use it, and let leaves link those shared targets explicitly.
 

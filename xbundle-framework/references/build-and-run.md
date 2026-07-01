@@ -17,7 +17,7 @@ Let generated scripts and config resolve `xbundle_runtime`. If template, runtime
 
 ## Module Execution Boundary
 
-`_icmd` outputs are shared modules, not standalone executables. Do not run `<case_name>_icmd.dylib` or `<case_name>_icmd.so` directly as a process.
+`_icmd` outputs are shared modules, not standalone executables. Do not run `<command_name>_icmd.dylib` or `<command_name>_icmd.so` directly as a process.
 
 Execute a command module through project-provided entrypoints such as generated scripts, host loaders, harnesses, clients, or CLI wrappers.
 
@@ -31,19 +31,20 @@ Validate in this order:
 2. Run local CLI `--help` and one smoke invocation only when a CLI exists.
 3. Run an xbundle command smoke through the host loader, harness, or client.
 
-The xbundle smoke should prove the module exports `xbundle_info` and `xbundle_main`, loads through the host, receives arguments, and writes through runtime I/O.
+The xbundle smoke should prove the module exports `xbundle_info` and
+`xbundle_main`, loads through the host, receives arguments, and writes through
+runtime I/O.
+
+For sbench-backed bundles, keep this validation focused on xbundle loader
+behavior. Validate suite registration, sbench runtime linkage, and benchmark
+subcommand visibility through `cross-platform-bench/references/sbench-registration.md`
+and `sbench/docs/registration.md`.
 
 ## Android Caveat
 
 Use generated docs for Android build/package commands. Do not add `adb push` or device paths unless those docs define the layout.
 
-For Android native CLI hosts, launch with an explicit loader path so the host can find the runtime provider and dynamic command libraries:
-
-```sh
-LD_LIBRARY_PATH=<xbundle-name>/dynamic_commands <host-or-harness> <host-args>
-```
-
-Keep the pushed directory self-contained according to host docs. If Android uses `.dylib` command filenames, keep the template's naming; the loader path is what matters.
+Android native runs may need an explicit library search path because package-local `.so` lookup cannot rely on project-relative ELF paths alone. Use the generated project's Android README, run script, or host loader docs. If they require `LD_LIBRARY_PATH`, set it to the documented library directory, such as the package `lib/` directory for `android:cli`; do not assume a fixed command-module directory layout.
 
 ## iOS Caveats
 

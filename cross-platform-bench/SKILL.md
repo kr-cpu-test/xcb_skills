@@ -15,7 +15,7 @@ description: Create or extend sbench-based cross-platform C/C++ benchmark logic 
 2. Read `references/project-creation.md` before creating or extending a benchmark project.
 3. Read `references/file-organization.md` before adding or moving benchmark files.
 4. Read only the benchmark implementation references needed for the task:
-   - `references/sbench-registration.md` for `MicroBench`, `ForkableBench`, leaf factories, domain suites, nested suites, and split/singleton registration.
+   - `references/sbench-registration.md` for benchmark-project suite shape, domain grouping, xbundle composition, and sbench registration usage policy; use `sbench/docs/registration.md` for exact API and linking facts.
    - `references/common-implementation.md` for CMake target patterns, support library linkage, reusable logic, and tests.
    - `references/scheduler-control.md` for `-t/--threads`, QoS, priority, CPU affinity, cluster parameters, and platform scheduler control.
    - `references/bench-io.md` for benchmark I/O, JSONL result rows, output sinks, and xbundle runtime path handling.
@@ -34,7 +34,7 @@ When the prompt says "module", "host", "runtime", "app integration", "device run
 
 Choose multi bench only for an explicit suite/domain workflow: a unified runner, grouped domains/subdomains, a long-lived benchmark collection, or ongoing leaf additions. Treat different setup, CLI options, inner loops, or result schemas as separate leaves only after multi-bench has been chosen. If the user merely asks for several variants of one measurement, keep one parameterized single bench.
 
-When multiple leaves belong to the same benchmark domain, prefer a domain suite: keep leaf benches registered in a domain-local factory and expose one `ForkableBench` suite to the unified runner. Use nested suites only for subdomains that should appear as grouped subcommands under the domain suite.
+When multiple leaves belong to the same benchmark domain, prefer a domain suite: keep leaf benches registered in a domain-local factory and expose one suite to the unified runner. Use the ordinary sbench suite shape by default; use `ForkableBench` only when suite-level `--fork` execution is required or the existing project already uses it. Use nested suites only for subdomains that should appear as grouped subcommands under the domain suite.
 
 When exposing a benchmark or multi-bench domain through xbundle, keep one xbundle command module for that benchmark/domain by default. The module entrypoint should run the sbench domain suite through a thin xbundle-sbench adapter instead of creating one `XBUNDLE_MAIN` per leaf bench.
 
@@ -46,7 +46,7 @@ In multi-bench mode, use the suite manifest and registration support. In single-
 - `assets/sbench-multi-bench-leaf/`: optional leaf example for an existing multi-bench suite root; not a default single-bench template.
 - `references/project-creation.md`: new project routing through xbundle-template and existing project extension rules.
 - `references/file-organization.md`: single vs multi layout rules.
-- `references/sbench-registration.md`: sbench C++ registration patterns, including domain-local hidden registries and unified runner exposure.
+- `references/sbench-registration.md`: project usage policy for sbench suites, domain-local factories, xbundle composition, and registration linkage; API facts live in `sbench/docs/registration.md`.
 - `references/common-implementation.md`: CMake target patterns, support libraries, and reusable implementation guidance.
 - `references/scheduler-control.md`: parameterized scheduler control, thread placement, QoS, priority, CPU affinity, and cluster parameters.
 - `references/bench-io.md`: benchmark I/O, JSONL result rows, output sinks, and xbundle runtime path handling.

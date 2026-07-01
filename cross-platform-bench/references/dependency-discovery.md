@@ -7,6 +7,7 @@ Use this reference only when generated benchmark dependencies are missing or amb
 - Treat benchmark dependencies as project-managed dependencies, not skill-owned files.
 - Do not vendor, submodule, or silently clone external repositories into this skill.
 - Prefer the generated project's `.gitmodules`, CMake, CPM, FetchContent, and template-provided bootstrap commands.
+- For CPM-based dependencies, prefer `CPM_SOURCE_CACHE=<workspace>/.cpm` under the benchmark project root instead of a global cache unless the user explicitly requests a shared cache.
 - Clone or point at adjacent local checkouts only when the user explicitly wants offline work, local dependency development, or gives approval.
 
 ## sbench
